@@ -3,9 +3,8 @@ name: Build FAP
 # Baut die .fap automatisch bei jedem Push / Tag und bei manuellem Start.
 # Ergebnis: herunterladbares Artefakt (immer) + Release-Datei (bei Tag v*).
 #
-# Warum CI? Das Flipper-SDK + die ARM-Toolchain werden zur Bauzeit geladen.
-# GitHub-Runner duerfen das; damit brauchst du lokal gar nichts zu installieren
-# und laedst am Ende nur die fertige devicetest_lab.fap herunter.
+# Nutzt ufbt direkt (pip), ohne Drittanbieter-Action. Der GitHub-Runner laedt
+# dabei SDK + ARM-Toolchain der offiziellen Firmware selbst herunter.
 
 on:
   push:
@@ -21,24 +20,32 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build FAP mit ufbt (offizielle Firmware, release)
-        uses: flipperdevices/flipperzero-ufbt-action@v0.1.3
-        id: build
+      - name: Python einrichten
+        uses: actions/setup-python@v5
         with:
-          # Gegen die offizielle Firmware (stable). Alternativen: dev / rc.
-          sdk-channel: release
-          # Projektwurzel = Repo-Wurzel (hier liegt application.fam)
-          app-dir: .
+          python-version: "3.11"
+
+      - name: ufbt installieren
+        run: pip install --upgrade ufbt
+
+      - name: SDK holen (offizielle Firmware, stable)
+        run: ufbt update --channel=release
+
+      - name: FAP bauen
+        run: ufbt
+
+      - name: Build-Ausgabe anzeigen
+        run: ls -lR dist || true
 
       - name: Artefakt hochladen (Download im Actions-Run)
         uses: actions/upload-artifact@v4
         with:
           name: devicetest_lab-fap
-          path: ${{ steps.build.outputs.fap-artifacts }}
+          path: dist/*.fap
           if-no-files-found: error
 
       - name: An Release anhaengen (nur bei Tag v*)
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ steps.build.outputs.fap-artifacts }}
+          files: dist/*.fap
