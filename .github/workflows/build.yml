@@ -57,6 +57,20 @@ jobs:
           path: out/devicetest_lab.fap
           if-no-files-found: error
 
+      # Fertige .fap als Datei in den Branch "prebuilt" legen -> direkter
+      # Download-Link (handytauglich, ohne Login). Laeuft nur auf main/master,
+      # der Push nach "prebuilt" loest keinen neuen Build aus (nicht in Trigger).
+      - name: .fap als Datei ins Repo (Branch prebuilt)
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          cp out/devicetest_lab.fap devicetest_lab.fap
+          git checkout -B prebuilt
+          git add -f devicetest_lab.fap
+          git commit -m "prebuilt: devicetest_lab.fap ($(date -u +%Y-%m-%dT%H:%MZ)) [skip ci]" || echo "keine Aenderung"
+          git push -f origin prebuilt
+
       - name: An Release anhaengen (nur bei Tag v*)
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
