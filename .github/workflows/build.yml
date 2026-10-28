@@ -37,14 +37,24 @@ jobs:
       - name: FAP bauen
         run: ufbt
 
-      - name: Build-Ausgabe anzeigen
-        run: ls -lR dist || true
+      - name: FAP einsammeln (flach, eine Datei) + Diagnose
+        run: |
+          echo "== dist listing =="
+          ls -lR dist || true
+          mkdir -p out
+          # genau eine .fap flach nach out/ kopieren, fester Name
+          fap="$(find dist -maxdepth 2 -name '*.fap' | head -1)"
+          echo "gefundene fap: $fap"
+          cp "$fap" out/devicetest_lab.fap
+          ls -l out
+          # Diagnose als Annotation sichtbar machen (Logs sind extern gesperrt)
+          echo "::notice title=FAP-Build::$(ls -l out/devicetest_lab.fap)"
 
       - name: Artefakt hochladen (Download im Actions-Run)
         uses: actions/upload-artifact@v4
         with:
           name: devicetest_lab-fap
-          path: dist/*.fap
+          path: out/devicetest_lab.fap
           if-no-files-found: error
 
       - name: An Release anhaengen (nur bei Tag v*)
