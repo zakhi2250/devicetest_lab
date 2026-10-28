@@ -1,0 +1,17 @@
+# Build-Ausgaben
+*.fap
+dist/
+build/
+.ufbt/
+_build/
+
+# ufbt / SDK-Cache
+.vscode/
+*.o
+*.d
+*.elf
+*.bin
+
+# OS
+.DS_Store
+Thumbs.db

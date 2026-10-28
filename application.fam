@@ -1,0 +1,25 @@
+# DeviceTest Lab — App-Manifest fuer die offizielle Flipper-Zero-Firmware.
+# Gebaut mit ufbt. Nur Onboard-Hardware, keine Erweiterungen noetig.
+#
+# Hinweis: fap_icon ist bewusst weggelassen, damit der Build ohne gueltiges
+# 10x10-1-bit-PNG durchlaeuft. Zum Aktivieren eine assets/icon.png anlegen
+# und die Zeile fap_icon="assets/icon.png" wieder eintragen.
+
+App(
+    appid="devicetest_lab",
+    name="DeviceTest Lab",
+    apptype=FlipperAppType.EXTERNAL,
+    entry_point="devicetest_lab_app",
+    stack_size=4 * 1024,
+    fap_category="Tools",
+    fap_author="you",
+    fap_version="0.1",
+    fap_description="Modulares Test-Labor fuer eigene Geraete: IR, Sub-GHz, NFC, RFID, iButton, GPIO/UART, BadUSB u.v.m.",
+    # Records, die der Scaffold sofort oeffnet. Pro Modul, das echte Logik
+    # bekommt, hier den passenden Record ergaenzen (z.B. "nfc", "subghz").
+    requires=[
+        "gui",
+        "storage",
+        "notification",
+    ],
+)

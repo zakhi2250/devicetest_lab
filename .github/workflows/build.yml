@@ -1,0 +1,44 @@
+name: Build FAP
+
+# Baut die .fap automatisch bei jedem Push / Tag und bei manuellem Start.
+# Ergebnis: herunterladbares Artefakt (immer) + Release-Datei (bei Tag v*).
+#
+# Warum CI? Das Flipper-SDK + die ARM-Toolchain werden zur Bauzeit geladen.
+# GitHub-Runner duerfen das; damit brauchst du lokal gar nichts zu installieren
+# und laedst am Ende nur die fertige devicetest_lab.fap herunter.
+
+on:
+  push:
+    branches: [main, master]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch: # Button "Run workflow" im Actions-Tab
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build FAP mit ufbt (offizielle Firmware, release)
+        uses: flipperdevices/flipperzero-ufbt-action@v0.1.3
+        id: build
+        with:
+          # Gegen die offizielle Firmware (stable). Alternativen: dev / rc.
+          sdk-channel: release
+          # Projektwurzel = Repo-Wurzel (hier liegt application.fam)
+          app-dir: .
+
+      - name: Artefakt hochladen (Download im Actions-Run)
+        uses: actions/upload-artifact@v4
+        with:
+          name: devicetest_lab-fap
+          path: ${{ steps.build.outputs.fap-artifacts }}
+          if-no-files-found: error
+
+      - name: An Release anhaengen (nur bei Tag v*)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.build.outputs.fap-artifacts }}
