@@ -13,6 +13,9 @@ on:
   pull_request:
   workflow_dispatch: # Button "Run workflow" im Actions-Tab
 
+permissions:
+  contents: write # noetig, damit der Release-Schritt die .fap anhaengen darf
+
 jobs:
   build:
     runs-on: ubuntu-latest
